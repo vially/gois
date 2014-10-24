@@ -14,8 +14,10 @@ import (
 
 // Record holds the information returned by the whois server
 type Record struct {
-	CreatedOn  time.Time
-	Registered bool
+	Domain        string
+	TrimmedDomain string
+	CreatedOn     time.Time
+	Registered    bool
 }
 
 func longestTLDSuffix(domain string) string {
@@ -41,19 +43,24 @@ func Whois(domain string) (record *Record, err error) {
 	server := TLDWhoisServers[tld]
 
 	trimmedDomain := trimSubdomains(domain, tld)
+	requestDomain := trimmedDomain
 	if server == "whois.verisign-grs.com" {
-		trimmedDomain = "=" + trimmedDomain
+		requestDomain = "=" + trimmedDomain
 	}
 
-	buf, err := queryWhoisServer(trimmedDomain, server)
+	buf, err := queryWhoisServer(requestDomain, server)
 	if err != nil {
 		return
 	}
 
 	response := string(buf)
-	fmt.Println(response)
+	record, err = parse(response)
+	if err == nil {
+		record.Domain = domain
+		record.TrimmedDomain = trimmedDomain
+	}
 
-	return parse(response)
+	return
 }
 
 func queryWhoisServer(domain, server string) (buf []byte, err error) {
@@ -81,7 +88,7 @@ func parse(response string) (record *Record, err error) {
 			if parsedDate, parseErr := now.Parse(value); parseErr != nil {
 				err = parseErr
 			} else {
-				record = &Record{parsedDate, true}
+				record = &Record{CreatedOn: parsedDate, Registered: true}
 			}
 			return
 		}

@@ -10,5 +10,5 @@ import (
 func main() {
 	now.TimeFormats = append(now.TimeFormats, "02-Jan-2006")
 	now.TimeFormats = append(now.TimeFormats, "2006-01-02T15:04:05.0Z")
-	fmt.Println(gois.Whois("example.com"))
+	fmt.Println(gois.WhoisBulk([]string{"example.com", "test.com"}))
 }
