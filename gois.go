@@ -23,7 +23,7 @@ type Record struct {
 func longestTLDSuffix(domain string) string {
 	longestTld := ""
 	for tld := range TLDWhoisServers {
-		if strings.HasSuffix(domain, tld) && utf8.RuneCountInString(tld) > utf8.RuneCountInString(longestTld) {
+		if strings.HasSuffix(domain, "."+tld) && utf8.RuneCountInString(tld) > utf8.RuneCountInString(longestTld) {
 			longestTld = tld
 		}
 	}
