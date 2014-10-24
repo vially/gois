@@ -46,14 +46,15 @@ func Whois(domain string) (record *Record, err error) {
 	requestDomain := trimmedDomain
 	if server == "whois.verisign-grs.com" {
 		requestDomain = "=" + trimmedDomain
+	} else if server == "whois.denic.de" {
+		requestDomain = "-T dn,ace " + trimmedDomain
 	}
 
-	buf, err := queryWhoisServer(requestDomain, server)
+	response, err := QueryWhoisServer(requestDomain, server)
 	if err != nil {
 		return
 	}
 
-	response := string(buf)
 	record, err = parse(response)
 	if err == nil {
 		record.Domain = domain
@@ -63,7 +64,8 @@ func Whois(domain string) (record *Record, err error) {
 	return
 }
 
-func queryWhoisServer(domain, server string) (buf []byte, err error) {
+// QueryWhoisServer queries a particular whois server for information about a domain
+func QueryWhoisServer(domain, server string) (response string, err error) {
 	conn, err := net.Dial("tcp", server+":43")
 	if err != nil {
 		return
@@ -71,7 +73,9 @@ func queryWhoisServer(domain, server string) (buf []byte, err error) {
 	defer conn.Close()
 
 	fmt.Fprintf(conn, "%s\r\n", domain)
-	buf, err = ioutil.ReadAll(conn)
+	if buf, err := ioutil.ReadAll(conn); err == nil {
+		response = string(buf)
+	}
 
 	return
 }
@@ -84,7 +88,7 @@ func parse(response string) (record *Record, err error) {
 		}
 		parts := strings.SplitN(line, ":", 2)
 		key, value := strings.TrimSpace(parts[0]), strings.TrimSpace(parts[1])
-		if strings.ToLower(key) == "creation date" {
+		if strings.ToLower(key) == "creation date" || strings.ToLower(key) == "changed" {
 			if parsedDate, parseErr := now.Parse(value); parseErr != nil {
 				err = parseErr
 			} else {
