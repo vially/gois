@@ -88,7 +88,7 @@ func parse(response string) (record *Record, err error) {
 		}
 		parts := strings.SplitN(line, ":", 2)
 		key, value := strings.TrimSpace(parts[0]), strings.TrimSpace(parts[1])
-		if strings.ToLower(key) == "creation date" || strings.ToLower(key) == "changed" || strings.ToLower(key) == "domain create date" {
+		if strings.ToLower(key) == "created" || strings.ToLower(key) == "creation date" || strings.ToLower(key) == "changed" || strings.ToLower(key) == "domain create date" {
 			if parsedDate, parseErr := now.Parse(value); parseErr != nil {
 				err = parseErr
 			} else {
@@ -106,4 +106,5 @@ func init() {
 	now.TimeFormats = append(now.TimeFormats, "2006-01-02T15:04:05.0Z")
 	now.TimeFormats = append(now.TimeFormats, "2006-01-02T15:04:05Z")
 	now.TimeFormats = append(now.TimeFormats, "2006-01-02T15:04:05-07:00")
+	now.TimeFormats = append(now.TimeFormats, "2006.01.02")
 }
