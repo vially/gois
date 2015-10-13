@@ -1,8 +1,8 @@
 package gois
 
 // WhoisBulk concurrently requests whois information for the given domains
-func WhoisBulk(domains []string) (records []Record) {
-	records = make([]Record, 0)
+func WhoisBulk(domains []string) map[string]*Record {
+	records := make(map[string]*Record)
 	results := make(chan *Record)
 	executeWhois := func(domain string, results chan<- *Record) {
 		result, _ := Whois(domain)
@@ -15,10 +15,9 @@ func WhoisBulk(domains []string) (records []Record) {
 
 	for index := 0; index < len(domains); index++ {
 		result := <-results
-		if result != nil {
-			records = append(records, *result)
-		}
+		domain := domains[index]
+		records[domain] = result
 	}
 
-	return
+	return records
 }
