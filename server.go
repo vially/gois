@@ -10,6 +10,19 @@ import (
 	"strings"
 )
 
+var timeFormats = []string{
+	"02-Jan-2006",
+	"2006.01.02",
+	"02-Jan-2006 15:04:05 MST",
+	"2006-01-02T15:04:05.0Z",
+	"2006-01-02T15:04:05Z",
+	"2006-01-02T15:04:05-07:00",
+}
+
+func init() {
+	now.TimeFormats = append(now.TimeFormats, timeFormats...)
+}
+
 type Server interface {
 	Query(string) (*Record, error)
 }
