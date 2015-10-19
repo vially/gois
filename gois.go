@@ -12,6 +12,9 @@ import (
 	"github.com/jinzhu/now"
 )
 
+//go:generate go run cmd/generate-whois-servers/main.go
+//go:generate go fmt servers.go
+
 // Record holds the information returned by the whois server
 type Record struct {
 	Domain        string
