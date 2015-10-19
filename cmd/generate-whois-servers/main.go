@@ -39,7 +39,7 @@ var TLDWhoisServers = map[string]string{
 		log.Fatalln(err)
 	}
 
-	f, err := os.Create("servers.go")
+	f, err := os.Create("tld_servers_list.go")
 	if err != nil {
 		log.Fatalln(err)
 	}

@@ -5,7 +5,7 @@ import (
 )
 
 //go:generate go run cmd/generate-whois-servers/main.go
-//go:generate go fmt servers.go
+//go:generate go fmt tld_servers_list.go
 
 var timeFormats = []string{
 	"02-Jan-2006",
