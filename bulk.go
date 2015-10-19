@@ -15,8 +15,7 @@ func WhoisBulk(domains []string) map[string]*Record {
 
 	for index := 0; index < len(domains); index++ {
 		result := <-results
-		domain := domains[index]
-		records[domain] = result
+		records[result.Domain] = result
 	}
 
 	return records
