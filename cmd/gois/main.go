@@ -3,20 +3,17 @@ package main
 import (
 	"fmt"
 	"github.com/vially/gois"
-	"log"
 	"os"
 )
 
 func main() {
 	if len(os.Args) == 1 {
-		fmt.Println("Usage: gois DOMAIN")
+		fmt.Println("Usage: gois DOMAIN [DOMAIN...]")
 		os.Exit(1)
 	}
 
-	record, err := gois.Whois(os.Args[1])
-	if err != nil {
-		log.Fatalln(err)
+	records := gois.WhoisBulk(os.Args[1:])
+	for domain, record := range records {
+		fmt.Printf("%s: %v\n", domain, record)
 	}
-
-	fmt.Println(record)
 }
