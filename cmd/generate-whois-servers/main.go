@@ -3,10 +3,10 @@ package main
 import (
 	"bufio"
 	"log"
+	"net/http"
 	"os"
 	"strings"
 	"text/template"
-"net/http"
 )
 
 func main() {
