@@ -15,6 +15,19 @@ import (
 //go:generate go run cmd/generate-whois-servers/main.go
 //go:generate go fmt servers.go
 
+var timeFormats = []string{
+	"02-Jan-2006",
+	"2006.01.02",
+	"02-Jan-2006 15:04:05 MST",
+	"2006-01-02T15:04:05.0Z",
+	"2006-01-02T15:04:05Z",
+	"2006-01-02T15:04:05-07:00",
+}
+
+func init() {
+	now.TimeFormats = append(now.TimeFormats, timeFormats...)
+}
+
 // Record holds the information returned by the whois server
 type Record struct {
 	Domain        string
@@ -101,13 +114,4 @@ func parse(response string) (record *Record, err error) {
 		}
 	}
 	return nil, errors.New("Unable to parse whois record")
-}
-
-func init() {
-	now.TimeFormats = append(now.TimeFormats, "02-Jan-2006")
-	now.TimeFormats = append(now.TimeFormats, "02-Jan-2006 15:04:05 MST")
-	now.TimeFormats = append(now.TimeFormats, "2006-01-02T15:04:05.0Z")
-	now.TimeFormats = append(now.TimeFormats, "2006-01-02T15:04:05Z")
-	now.TimeFormats = append(now.TimeFormats, "2006-01-02T15:04:05-07:00")
-	now.TimeFormats = append(now.TimeFormats, "2006.01.02")
 }
