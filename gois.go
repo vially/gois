@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"net"
 	"strings"
-	"time"
 	"unicode/utf8"
 
 	"github.com/jinzhu/now"
@@ -26,14 +25,6 @@ var timeFormats = []string{
 
 func init() {
 	now.TimeFormats = append(now.TimeFormats, timeFormats...)
-}
-
-// Record holds the information returned by the whois server
-type Record struct {
-	Domain        string
-	TrimmedDomain string
-	CreatedOn     time.Time
-	Registered    bool
 }
 
 func longestTLDSuffix(domain string) string {
