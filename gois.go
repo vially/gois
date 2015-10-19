@@ -3,12 +3,11 @@ package gois
 import (
 	"errors"
 	"fmt"
+	"github.com/jinzhu/now"
+	"golang.org/x/net/publicsuffix"
 	"io/ioutil"
 	"net"
 	"strings"
-	"unicode/utf8"
-
-	"github.com/jinzhu/now"
 )
 
 //go:generate go run cmd/generate-whois-servers/main.go
@@ -27,37 +26,24 @@ func init() {
 	now.TimeFormats = append(now.TimeFormats, timeFormats...)
 }
 
-func longestTLDSuffix(domain string) string {
-	longestTld := ""
-	for tld := range TLDWhoisServers {
-		if strings.HasSuffix(domain, "."+tld) && utf8.RuneCountInString(tld) > utf8.RuneCountInString(longestTld) {
-			longestTld = tld
-		}
-	}
-	return longestTld
-}
-
-func trimSubdomains(domain, tld string) (trimmedDomain string) {
-	noTld := strings.TrimSuffix(domain, "."+tld)
-	parts := strings.Split(noTld, ".")
-	trimmedDomain = fmt.Sprintf("%s.%s", parts[len(parts)-1], tld)
-	return trimmedDomain
-}
-
 // Whois returns the public whois information for a domain
 func Whois(domain string) (record *Record, err error) {
-	tld := longestTLDSuffix(domain)
-	server := TLDWhoisServers[tld]
+	tld, _ := publicsuffix.PublicSuffix(domain)
+	whoisServer := TLDWhoisServers[tld]
 
-	trimmedDomain := trimSubdomains(domain, tld)
-	requestDomain := trimmedDomain
-	if server == "whois.verisign-grs.com" {
-		requestDomain = "=" + trimmedDomain
-	} else if server == "whois.denic.de" {
-		requestDomain = "-T dn,ace " + trimmedDomain
+	eTLDPlusOne, err := publicsuffix.EffectiveTLDPlusOne(domain)
+	if err != nil {
+		return nil, err
 	}
 
-	response, err := QueryWhoisServer(requestDomain, server)
+	requestDomain := eTLDPlusOne
+	if whoisServer == "whois.verisign-grs.com" {
+		requestDomain = "=" + eTLDPlusOne
+	} else if whoisServer == "whois.denic.de" {
+		requestDomain = "-T dn,ace " + eTLDPlusOne
+	}
+
+	response, err := QueryWhoisServer(requestDomain, whoisServer)
 	if err != nil {
 		return
 	}
@@ -65,7 +51,7 @@ func Whois(domain string) (record *Record, err error) {
 	record, err = parse(response)
 	if err == nil {
 		record.Domain = domain
-		record.TrimmedDomain = trimmedDomain
+		record.TrimmedDomain = eTLDPlusOne
 	}
 
 	return
