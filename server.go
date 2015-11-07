@@ -19,6 +19,14 @@ var timeFormats = []string{
 	"2006-01-02T15:04:05-07:00",
 }
 
+var domainRegistrationKeys = []string{
+	"created",
+	"creation date",
+	"changed",
+	"domain create date",
+	"registered on",
+}
+
 func init() {
 	now.TimeFormats = append(now.TimeFormats, timeFormats...)
 }
@@ -33,7 +41,20 @@ func ServerForDomain(domain string) (Server, error) {
 		return &GenericServer{TLD: tld, Server: server}, nil
 	}
 
-	return nil, errors.New("Unable to find a suitable whois server for domain name: " + domain)
+	return ServerForTLD(tld)
+}
+
+func ServerForTLD(domain string) (Server, error) {
+	if !strings.Contains(domain, ".") {
+		return nil, errors.New("Unable to find a suitable whois server for TLD: " + domain)
+	}
+	parts := strings.SplitN(domain, ".", 2)
+	tld := parts[1]
+	if server, ok := TLDWhoisServers[tld]; ok {
+		return &GenericServer{TLD: tld, Server: server}, nil
+	}
+
+	return ServerForTLD(tld)
 }
 
 type GenericServer struct {
@@ -81,7 +102,7 @@ func (s *GenericServer) parse(response, domain string) (record *Record, err erro
 		}
 		parts := strings.SplitN(line, ":", 2)
 		key, value := strings.TrimSpace(parts[0]), strings.TrimSpace(parts[1])
-		if strings.ToLower(key) == "created" || strings.ToLower(key) == "creation date" || strings.ToLower(key) == "changed" || strings.ToLower(key) == "domain create date" {
+		if isValidRegistrationKey(key) {
 			if parsedDate, parseErr := now.Parse(value); parseErr != nil {
 				err = parseErr
 			} else {
@@ -91,4 +112,13 @@ func (s *GenericServer) parse(response, domain string) (record *Record, err erro
 		}
 	}
 	return nil, errors.New("Unable to parse whois record")
+}
+
+func isValidRegistrationKey(key string) bool {
+	for _, validKey := range domainRegistrationKeys {
+		if strings.ToLower(key) == validKey {
+			return true
+		}
+	}
+	return false
 }
