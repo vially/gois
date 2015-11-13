@@ -17,6 +17,7 @@ var timeFormats = []string{
 	"2006-01-02T15:04:05.0Z",
 	"2006-01-02T15:04:05Z",
 	"2006-01-02T15:04:05-07:00",
+	"before Jan-2006",
 }
 
 var domainRegistrationKeys = []string{
