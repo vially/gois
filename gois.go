@@ -1,18 +1,7 @@
 package gois
 
-import (
-	"time"
-)
-
 //go:generate go run cmd/generate-whois-servers/main.go
 //go:generate go fmt tld_servers_list.go
-
-// Record holds the information returned by the whois server
-type Record struct {
-	Domain     string
-	CreatedOn  time.Time
-	Registered bool
-}
 
 // Whois returns the public whois information for a domain
 func Whois(domain string) (*Record, error) {

@@ -3,11 +3,12 @@ package gois
 import (
 	"errors"
 	"fmt"
-	"github.com/jinzhu/now"
-	"golang.org/x/net/publicsuffix"
 	"io/ioutil"
 	"net"
 	"strings"
+
+	"github.com/jinzhu/now"
+	"golang.org/x/net/publicsuffix"
 )
 
 var timeFormats = []string{
@@ -18,14 +19,6 @@ var timeFormats = []string{
 	"2006-01-02T15:04:05Z",
 	"2006-01-02T15:04:05-07:00",
 	"before Jan-2006",
-}
-
-var domainRegistrationKeys = []string{
-	"created",
-	"creation date",
-	"changed",
-	"domain create date",
-	"registered on",
 }
 
 func init() {
@@ -95,31 +88,25 @@ func (s *GenericServer) query(domain string) ([]byte, error) {
 	return ioutil.ReadAll(conn)
 }
 
-func (s *GenericServer) parse(response, domain string) (record *Record, err error) {
+func (s *GenericServer) parse(response, domain string) (*Record, error) {
+	keyValues := extractKeyValuePairs(response)
+	record := NewRecord(domain, keyValues)
+	if record.CreatedOn == nil && record.Status == "" && !record.Registered {
+		return nil, errors.New("Unable to parse whois record")
+	}
+
+	return record, nil
+}
+
+func extractKeyValuePairs(response string) map[string]string {
+	keyValues := map[string]string{}
 	for _, line := range strings.Split(response, "\n") {
 		line = strings.TrimSpace(line)
 		if line == "" || !strings.Contains(line, ":") {
 			continue
 		}
 		parts := strings.SplitN(line, ":", 2)
-		key, value := strings.TrimSpace(parts[0]), strings.TrimSpace(parts[1])
-		if isValidRegistrationKey(key) {
-			if parsedDate, parseErr := now.Parse(value); parseErr != nil {
-				err = parseErr
-			} else {
-				record = &Record{Domain: domain, CreatedOn: parsedDate, Registered: true}
-			}
-			return record, nil
-		}
+		keyValues[strings.TrimSpace(parts[0])] = strings.TrimSpace(parts[1])
 	}
-	return nil, errors.New("Unable to parse whois record")
-}
-
-func isValidRegistrationKey(key string) bool {
-	for _, validKey := range domainRegistrationKeys {
-		if strings.ToLower(key) == validKey {
-			return true
-		}
-	}
-	return false
+	return keyValues
 }
