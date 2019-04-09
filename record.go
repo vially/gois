@@ -38,7 +38,6 @@ func NewRecord(domain string, keyValues map[string]string) *Record {
 							record.UpdatedOn = &parsedDate
 						case "expire":
 							record.ExpiresOn = &parsedDate
-						default:
 						}
 						record.Registered = true
 					}
